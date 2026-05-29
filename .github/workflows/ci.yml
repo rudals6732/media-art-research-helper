@@ -1,0 +1,97 @@
+name: CI
+
+on:
+  push:
+    branches: ["master", "main"]
+  pull_request:
+    branches: ["master", "main"]
+
+jobs:
+  python-tests:
+    name: Python Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: scrapper-python
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: scrapper-python/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run scrapper unit tests
+        run: python -m unittest discover -s tests -p "test_*.py" -v
+
+  jarvis-tests:
+    name: JARVIS Intent Parser Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: scrapper-python/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r scrapper-python/requirements.txt
+
+      - name: Run JARVIS unit tests
+        run: python -m unittest jarvis-core/tests/test_intent_parser.py -v
+
+  flask-smoke:
+    name: Flask API Smoke Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: scrapper-python
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: scrapper-python/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Start Flask server and smoke test
+        run: |
+          python run.py &
+          sleep 3
+          curl -sf http://localhost:5000/health
+
+  java-tests:
+    name: Java Tests (Maven)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend-java
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: "21"
+          distribution: temurin
+          cache: maven
+
+      - name: Build and test
+        run: mvn test -B
