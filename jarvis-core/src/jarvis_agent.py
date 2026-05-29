@@ -162,9 +162,11 @@ class JarvisAgent:
     def __init__(self):
         cfg = _load_cfg()
 
-        self._scraper_url = cfg["scraper"]["base_url"]
-        self._backend_url = cfg["backend"]["base_url"]
-        self._timeout     = cfg["scraper"].get("timeout_sec", 30)
+        self._scraper_url          = cfg["scraper"]["base_url"]
+        self._scraper_health_path  = cfg["scraper"].get("health_path", "/health")
+        self._backend_url          = cfg["backend"]["base_url"]
+        self._backend_health_path  = cfg["backend"].get("health_path", "/health")
+        self._timeout              = cfg["scraper"].get("timeout_sec", 30)
         self._max_retries = cfg["agent"].get("max_retries", 3)
 
         self._http    = _make_http_session(self._max_retries)
@@ -395,10 +397,14 @@ class JarvisAgent:
     def _handle_status(self, _payload: dict) -> dict:
         """scraper + backend 헬스 체크 및 응답 시간 측정."""
         results = {}
-        for name, url in [("scraper", self._scraper_url), ("backend", self._backend_url)]:
+        services = [
+            ("scraper", self._scraper_url, self._scraper_health_path),
+            ("backend", self._backend_url, self._backend_health_path),
+        ]
+        for name, url, health_path in services:
             t0 = time.monotonic()
             try:
-                resp = self._http.get(f"{url}/health", timeout=5)
+                resp = self._http.get(f"{url}{health_path}", timeout=5)
                 elapsed_ms = round((time.monotonic() - t0) * 1000)
                 if resp.status_code == 200:
                     results[name] = {"status": "ok", "latency_ms": elapsed_ms}

@@ -1,10 +1,12 @@
 {
   "scraper": {
     "base_url": "http://localhost:5000",
+    "health_path": "/health",
     "timeout_sec": 30
   },
   "backend": {
     "base_url": "http://localhost:8080",
+    "health_path": "/api/health",
     "timeout_sec": 30
   },
   "voice": {
