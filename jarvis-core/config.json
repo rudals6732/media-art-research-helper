@@ -1,0 +1,25 @@
+{
+  "scraper": {
+    "base_url": "http://localhost:5000",
+    "timeout_sec": 30
+  },
+  "backend": {
+    "base_url": "http://localhost:8080",
+    "timeout_sec": 30
+  },
+  "voice": {
+    "enabled": false,
+    "stt_engine": "google",
+    "tts_engine": "pyttsx3",
+    "language": "ko-KR"
+  },
+  "os_bridge": {
+    "allowed_commands": ["python", "mvn", "java", "pip", "dir", "ls", "cat", "type"],
+    "allowed_base_paths": ["./output", "./scrapper-python", "./backend-java"],
+    "shell": false
+  },
+  "agent": {
+    "max_retries": 3,
+    "log_level": "INFO"
+  }
+}
